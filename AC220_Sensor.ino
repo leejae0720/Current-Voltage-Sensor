@@ -1,5 +1,6 @@
 #define ANALOG_PIN_TIMER_INTERVAL 1000 // 1ms
-#define CHANNEL_1 36 
+#define CHANNEL_1 36
+#define CHANNEL_2 39
 
 int Channel_1_arr_size;
 
@@ -14,7 +15,8 @@ int sensorValue;
 
 int swtich_number;  // '1': Data collection, '2': Data Calculation
 
-unsigned long pastMillis = 0; 
+unsigned long pastMillis_0 = 0; 
+unsigned long pastMillis_1 = 0;
 unsigned long pastMillis_2 = 0;
 int timerflag = 0;  // 초기 상태
 
@@ -43,18 +45,6 @@ void loop() {
   unsigned long deltaMillis = 0;
   unsigned long thisMillis = millis();
 
-/*
-  if(thisMillis - pastMillis >= 500){ // Doing 0.5sec
-        pastMillis = thisMillis;
-        timerflag = 1;
-  }
-
-  if(timerflag == 1){
-        digitalWrite(2, !(digitalRead(2)));
-        timerflag = 0;
-  }
-*/
-
   if(interruptCounter > 0){ //interrupt function, 5분 마다 동작
     portENTER_CRITICAL(&timerMux);
     interruptCounter--;
@@ -67,7 +57,7 @@ void loop() {
   }
   
   switch(timerflag){
-    case 0:
+    case 0: // timerflag = 0
       if (thisMillis != thisMillis_old) {
         deltaMillis = thisMillis-thisMillis_old;
         thisMillis_old = thisMillis;
@@ -91,50 +81,37 @@ void loop() {
 
         i++;
 
-        if(thisMillis - pastMillis >= 3000){ // Doing 0.5 second
-          pastMillis = thisMillis;
-          //i = 0;
-          Serial.print("on");
-          Serial.print(",");
-          Serial.println(i);
-          timerflag = 1;
-        }
-
         if((thisMillis%300000) == 0){ // Operations per 5 minutes
           Serial.print("5555555555555555555555555555555555555");
         } 
       }
-    
-      break;
-    
-  
-    case 1:
-      if(thisMillis - pastMillis_2 >= 9500 && timerflag == 1){ // 0.5초가 지났을때 수행할 작업 함수 작성
-      pastMillis_2 = thisMillis;
-      digitalWrite(2, !(digitalRead(2)));
-      delay(1000);
+    break;
+
+    case 1: // timerflag = 1, 9.5 초간 수행 할 작업 실행
+      Serial.println("Data Calculation Start");
+
+
+
       timerflag = 0;
-      }
+      break;
+
+    case 2: // timerflag = 2
       break;
  }
-}
 
-/*
-  if(thisMillis - pastMillis >= 3000){ // Doing 0.5 second
-  pastMillis = thisMillis;
-  //i = 0;
-  Serial.print("on");
-  Serial.print(",");
-  Serial.println(i);
-  timerflag = 1;
-
+  if(thisMillis - pastMillis_0 >= 3000){  // 3초가 지났을때 timerflag = 1 로 변경
+    pastMillis_0 = thisMillis;
+    Serial.print("on");
+    Serial.print(",");
+    Serial.println(i);
+    timerflag = 1;
   }
-
-  if(thisMillis - pastMillis_2 >= 9500 && timerflag == 1){ // 0.5초가 지났을때 수행할 작업 함수 작성
-    pastMillis_2 = thisMillis;
+   
+  if(thisMillis - pastMillis_1 >= 9500 && timerflag == 1){ // 9.5초가 지나고 timerflag = 1 일때, timerflag = 0 로 변경
+    pastMillis_1 = thisMillis;
     digitalWrite(2, !(digitalRead(2)));
     delay(1000);
     timerflag = 0;
   }
+ 
 }
-*/
