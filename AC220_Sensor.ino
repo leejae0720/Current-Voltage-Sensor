@@ -97,21 +97,40 @@ void loop() {
 
     case 1: // timerflag = 1, 9.5 초간 수행 할 작업 실행
       //Serial.println("Data Calculation Start");
-      if(thisMillis - pastMillis_1 > 9500){
-        timerflag = 0;
-        Serial.println("Set Position");
-      }
+      Serial.println("Calculation Mode");
+      delay(1000);
       break;
  }
 
   if(thisMillis - pastMillis_0 >= 4000){  // 4초가 지났을때 timerflag = 1 로 변경
-    pastMillis_0 = thisMillis;
-    timerflag = 1;
-    Serial.println("Data Calculation Start");
-    
+    if(timerflag == 0){
+      pastMillis_0 = thisMillis;
+      timerflag = 1;
+      Serial.println("Data Calculation Start");
+    }
+    else{
+      pastMillis_0 = thisMillis;
+    }
+  }
+
+  if(thisMillis - pastMillis_1 >= 13000){  // 10초 간 작업 수행 (기준 값: 10000(10초)+4000(4초))
+    if(timerflag == 1){
+      pastMillis_1 = thisMillis;
+      timerflag = 0;
+      Serial.println("Set Postition");
+    }
+    else{
+      pastMillis_1 = thisMillis;
+    }
   }
 
   /*
+  if(thisMillis - pastMillis_1 >= 13500){ // 4초 후 9.5초간 내용 입력
+    pastMillis_1 = thisMillis;
+    timerflag = 0;
+    Serial.println("Set Position");
+  }
+  
   if(timerflag == 1){
     if(thisMillis - pastMillis_1 >= 9500){
       pastMillis_1 = thisMillis;
@@ -121,7 +140,7 @@ void loop() {
       timerflag = 0;
     }
   }
-  /*
+
   if(thisMillis - pastMillis_1 >= 9500 && timerflag == 1){ // 9.5초가 지나고 timerflag = 1 일때, timerflag = 0 로 변경
     pastMillis_1 = thisMillis;
     digitalWrite(2, !(digitalRead(2)));
