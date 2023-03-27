@@ -2,8 +2,6 @@
 #define CHANNEL_1 36
 #define CHANNEL_2 39
 
-int Channel_1_arr_size;
-
 volatile int interruptCounter;
 int totalInterruptCounter;
 hw_timer_t * timer = NULL;
@@ -11,16 +9,17 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 static long analogPinTimer = 0;
 unsigned long thisMillis_old;
+unsigned long pastMillis; 
+unsigned int timer_count = 0;
 int sensorValue_1, sensorValue_2;
 
-unsigned long pastMillis_0 = 0; 
-unsigned long pastMillis_1 = 0;
-unsigned long pastMillis_2 = 0;
-int timerflag = 0;  // 초기 상태
+unsigned int switchflag = 0;  // 초기 상태
+unsigned int timerflag = 0;
 
 int i, j = 0;  // 데이터 구별 숫자
 int Data_arr1[500];
 int Data_arr2[500];
+
 
 void IRAM_ATTR onTimer_1() { // interrupt function
   portENTER_CRITICAL_ISR(&timerMux);
@@ -40,7 +39,6 @@ void setup() {
 }
 
 void loop() {
-  
   unsigned long deltaMillis = 0;
   unsigned long thisMillis = millis();
 
@@ -55,17 +53,17 @@ void loop() {
     Serial.println(totalInterruptCounter);
   }
   
-  switch(timerflag){
-    case 0: // timerflag = 0
-      if (thisMillis != thisMillis_old) {
-        deltaMillis = thisMillis-thisMillis_old;
-        thisMillis_old = thisMillis;
-      }
+  if(switchflag == 0){
+    if(thisMillis != thisMillis_old) {
+    deltaMillis = thisMillis-thisMillis_old;
+    thisMillis_old = thisMillis;
+    }
     
-      analogPinTimer -= deltaMillis;
+    analogPinTimer -= deltaMillis;
 
-      if(analogPinTimer <= 0) {
+    if(analogPinTimer <= 0) {
         analogPinTimer += ANALOG_PIN_TIMER_INTERVAL;
+        
         sensorValue_1 = analogRead(CHANNEL_1);
         sensorValue_2 = analogRead(CHANNEL_2);
 
@@ -93,60 +91,81 @@ void loop() {
           Serial.print("5555555555555555555555555555555555555");
         } 
       }
-    break;
-
-    case 1: // timerflag = 1, 9.5 초간 수행 할 작업 실행
-      //Serial.println("Data Calculation Start");
-      Serial.println("Calculation Mode");
-      delay(1000);
-      break;
- }
-
-  if(thisMillis - pastMillis_0 >= 4000){  // 4초가 지났을때 timerflag = 1 로 변경
-    if(timerflag == 0){
-      pastMillis_0 = thisMillis;
-      timerflag = 1;
-      Serial.println("Data Calculation Start");
-    }
-    else{
-      pastMillis_0 = thisMillis;
-    }
   }
 
-  if(thisMillis - pastMillis_1 >= 13000){  // 10초 간 작업 수행 (기준 값: 10000(10초)+4000(4초))
-    if(timerflag == 1){
-      pastMillis_1 = thisMillis;
-      timerflag = 0;
-      Serial.println("Set Postition");
-    }
-    else{
-      pastMillis_1 = thisMillis;
-    }
+  else if(switchflag == 1){
+    //Serial.println("Calculation Mode");
   }
-
-  /*
-  if(thisMillis - pastMillis_1 >= 13500){ // 4초 후 9.5초간 내용 입력
-    pastMillis_1 = thisMillis;
-    timerflag = 0;
-    Serial.println("Set Position");
+  
+  if(thisMillis - pastMillis >= 500){
+    pastMillis = thisMillis;
+    timerflag = 1;
   }
   
   if(timerflag == 1){
+    timer_count += 1;
+
+    if(timer_count == 8){
+      switchflag = 1;      
+    }
+    else if(timer_count == 24){
+      switchflag = 0;
+      timer_count = 0;
+    }
+
+    timerflag = 0;
+  }
+}
+
+/*
+  if(thisMillis - pastMillis_0 >= 4000){  // 4초가 지났을때 switchflag = 1 로 변경
+    if(switchflag == 0){
+      pastMillis_0 = thisMillis;
+      pastMillis_1 = thisMillis;
+      switchflag = 1;
+      Serial.println("Data Calculation Start");
+    }
+    else if(switchflag == 1){
+      pastMillis_0 = thisMillis;
+      
+    }
+  }
+
+  if(thisMillis - pastMillis_1 >= 10000){  // 10초 간 작업 수행
+    if(switchflag == 1){
+      pastMillis_0 = thisMillis;
+      pastMillis_1 = thisMillis;
+      switchflag = 0;
+      Serial.println("Set Postition");
+    }
+    else if(switchflag == 0){
+      pastMillis_1 = thisMillis;
+    }
+  }
+}
+
+  if(thisMillis - pastMillis_1 >= 13500){ // 4초 후 9.5초간 내용 입력
+    pastMillis_1 = thisMillis;
+    switchflag = 0;
+    Serial.println("Set Position");
+  }
+  
+  if(switchflag == 1){
     if(thisMillis - pastMillis_1 >= 9500){
       pastMillis_1 = thisMillis;
       Serial.println("Data Calculation End");
       digitalWrite(2, !(digitalRead(2)));
       delay(1000);
-      timerflag = 0;
+      switchflag = 0;
     }
   }
 
-  if(thisMillis - pastMillis_1 >= 9500 && timerflag == 1){ // 9.5초가 지나고 timerflag = 1 일때, timerflag = 0 로 변경
+  if(thisMillis - pastMillis_1 >= 9500 && switchflag == 1){ // 9.5초가 지나고 switchflag = 1 일때, switchflag = 0 로 변경
     pastMillis_1 = thisMillis;
     digitalWrite(2, !(digitalRead(2)));
     delay(1000);
-    timerflag = 0;
+    switchflag = 0;
   }
   */
  
-}
+
