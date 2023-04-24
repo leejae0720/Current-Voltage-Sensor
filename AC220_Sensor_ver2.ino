@@ -1,4 +1,3 @@
-//#define ANALOG_PIN_TIMER_INTERVAL 100 // 1ms, 샘플링 시간 설정
 #define CHANNEL_Current_1 36
 #define CHANNEL_Current_2 39
 #define CHANNEL_Current_3 34
@@ -6,138 +5,200 @@
 #define CHANNEL_Voltage_2 32
 #define CHANNEL_Voltage_3 33
 
+// Get current time setting
+#include <WiFi.h>
+#include <time.h>
+const char* ssid = "IRMS";
+const char* password = "0312012945";
+
 volatile int interruptCounter;
 int totalInterruptCounter;
-hw_timer_t * timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+hw_timer_t *timer0 = NULL;
+hw_timer_t *timer1 = NULL;
+
+volatile boolean sampling_timer = true;
 
 static long analogPinTimer = 0;
 unsigned long thisMillis_old;
-unsigned long pastMillis;
+unsigned long pastMillis = 0;
 unsigned long deltaMillis = 0;
 unsigned int timer_count = 0;
-int Current_Value_1, Current_Value_2, Current_Value_3;
+int Current_Value_0, Current_Value_1, Current_Value_2;
 int Voltage_Value_1, Voltage_Value_2, Voltage_Value_3;
 
+unsigned int serial_flag = 0;
 unsigned int switchflag = 0;  // 초기 상태
+unsigned int interrupt_flag = 0;
 unsigned int timerflag = 0;
 
 int i, j, k = 0; // 데이터 구별 숫자
-int a, b = 0; // 데이터 계산에 사용 변수
-int Current_Data_arr1[2000], Current_Data_arr2[2000], Current_Data_arr3[2000];
-int Voltage_Data_arr1[2000], Voltage_Data_arr2[2000], Voltage_Data_arr3[2000];
-int Total_Current_Data_arr1;
-int Total_Current_Data_arr2;
 
-void IRAM_ATTR onTimer() { // interrupt function
-  portENTER_CRITICAL_ISR(&timerMux);
-  interruptCounter++;
+int Current_data_arr0[1000], Current_data_arr1[1000], Current_data_arr2[1000];
+int Current_data_mmd0[10], Current_data_mmd1[10], Current_data_mmd2[10];
+int mmd_sum0, mmd_sum1, mmd_sum2 = 0;
+int count0, count1, count2 = 0;
 
-  Current_Value_1 = analogRead(CHANNEL_Current_1);
-  Current_Value_2 = analogRead(CHANNEL_Current_2);
-  Current_Value_3 = analogRead(CHANNEL_Current_3);
-  
-  Current_Data_arr1[i] = Current_Value_1;
-  Current_Data_arr2[j] = Current_Value_2;
-  Current_Data_arr3[k] = Current_Value_3;
+volatile boolean gLedState = LOW;
 
-  portEXIT_CRITICAL_ISR(&timerMux);
+void IRAM_ATTR onTimer0() { // interrupt function
+  if(sampling_timer){
+    Current_Value_0 = analogRead(CHANNEL_Current_1);
+    Current_Value_1 = analogRead(CHANNEL_Current_2);
+    Current_Value_2 = analogRead(CHANNEL_Current_3);
+      
+    Current_data_arr0[i] = Current_Value_0;
+    Current_data_arr1[j] = Current_Value_1;
+    Current_data_arr2[k] = Current_Value_2;
+
+    gLedState = !gLedState;
+    digitalWrite(2, gLedState);
+  }
 }
+
+void IRAM_ATTR onTimer1() {
+  timer_count += 1;
+
+  if(serial_flag == 0){
+      serial_flag = 1;
+    }
+}
+
 
 void setup() {
   Serial.begin(115200);
   pinMode(2, OUTPUT);
 
-  timer = timerBegin(0, 80, true);  // run for 1msec second
-  timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, 1000, true); // 1msec timer
-  timerAlarmEnable(timer);
+  //Sampling timer
+  timer0 = timerBegin(0, 80, true);  // run for 0.1msec second
+  timerAttachInterrupt(timer0, &onTimer0, true);
+  timerAlarmWrite(timer0, 1000, true); // 1msec Sampling time
+  timerAlarmEnable(timer0);
+
+  //mode change timer
+  timer1 = timerBegin(1, 80, true);  // run for 0.5sec second
+  timerAttachInterrupt(timer1, &onTimer1, true);
+  timerAlarmWrite(timer1, 500000, true); 
+  timerAlarmEnable(timer1);
+
+  /*
+  //For get current time wifi setting
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  configTime(9 * 3600, 0, "pool.ntp.org"); // Get seoul time from NTP server
+  */
 }
 
 void loop() {
-  unsigned long thisMillis = millis();
-  unsigned long deltaMillis = 0;
+  static unsigned long prev_time = 0;
+  unsigned long current_time = millis();
 
-  if(interruptCounter > 0){ //interrupt function, 1msec 마다 동작
-    portENTER_CRITICAL(&timerMux);
-    interruptCounter--;
-    portEXIT_CRITICAL(&timerMux);
-
-    totalInterruptCounter++;
-
-    Serial.print("An interrupt as occurred. Total number: ");
-    Serial.println(totalInterruptCounter);
-  }
-
-  if(thisMillis - pastMillis >= 500){
-    pastMillis = thisMillis;
-    timerflag = 1;
-  }
   /*
-  if(timerflag == 1){
-    timer_count += 1;
-
-    if(timer_count == 20){
-      switchflag = 1;      
+  if (current_time - prev_time >= 10000) { 
+    prev_time = current_time; 
+    struct tm timeinfo; 
+    if(!getLocalTime(&timeinfo)){ 
+      Serial.println("Failed to obtain time");
+      return;
     }
-    else if(timer_count == 24){
-      switchflag = 0;
-      timer_count = 0;
-      i = 0;
-      j = 0;
-    }
-    timerflag = 0;
+    Serial.printf("%04d-%02d-%02d %02d:%02d:%02d\n", timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec); // 년월일시분초를 출력합니다.
   }
   */
-  if(switchflag == 0){
+
+  if(timer_count >= 1 && timer_count < 20){  // 0.5sec ~ 9.5sec
     
-    //Voltage_Value_1 = analogRead(CHANNEL_Voltage_1);
-    //Voltage_Value_2 = analogRead(CHANNEL_Voltage_2);
-    //Voltage_Value_3 = analogRead(CHANNEL_Voltage_3);
-
-    //Serial.print(thisMillis/1000.0);  // Sampleing Time 1ms setting
-    //Serial.print(",");
-    //Serial.println(Current_Value_1);
-    //Serial.print(",");
-    Serial.println(Current_Value_2);
-    //Serial.print(",");
-    //Serial.println(Current_Value_3);
-    //Serial.print(Current_Data_arr1[i]);
-    //Serial.print(",");
-    //Serial.print(i);
-    //Serial.print(",");
-    //Serial.print(Current_Data_arr2[j]);
-    //Serial.print(",");
-    //Serial.println(j);
-      
-    i++;
-    j++;
-
-    if((thisMillis%300000) == 0){ // Operations per 5 minutes
-      Serial.print("5555555555555555555555555555555555555");
+    sampling_timer = false; 
+    /*
+    // Channel 1
+    for(int a =0; a < 10; a++){
+      int start0 = a * 50;
+      int end0 = start0 + 49;
+      int minVal0 = Current_data_arr0[start0];
+      int maxVal0 = Current_data_arr0[start0];
+      for(int b = start0 + 1; b <= end0; b++){
+        if(Current_data_arr0[b] < minVal0){
+          minVal0 = Current_data_arr0[b];
+        }
+        if(Current_data_arr0[b] > maxVal0){
+          maxVal0 = Current_data_arr0[b];
+        }
+      }
+      Current_data_mmd0[a] = maxVal0 - minVal0;
+      mmd_sum0 += Current_data_mmd0[a];
+      count0++;
     }
-  }
+    float average0 = (float)mmd_sum0 / count0;
+    Serial.println(average0);
+    */
+    // Channel 2
+    for(int a =0; a < 10; a++){
+      int start1 = a * 50;
+      int end1 = start1 + 49;
+      int minVal1 = Current_data_arr1[start1];
+      int maxVal1 = Current_data_arr1[start1];
+      for(int b = start1 + 1; b <= end1; b++){
+        if(Current_data_arr1[b] < minVal1){
+          minVal1 = Current_data_arr1[b];
+        }
+        if(Current_data_arr1[b] > maxVal1){
+          maxVal1 = Current_data_arr1[b];
+        }
+      }
+      Current_data_mmd1[a] = maxVal1 - minVal1;
+      mmd_sum1 += Current_data_mmd1[a];
+      count1++;
+    }
+    int average1 = mmd_sum1 / count1;
 
-  else if(switchflag == 1){
+    if(serial_flag == 1){
+      Serial.println(average1);
+      serial_flag = 0;
+    }
+
+    /*
+    // Channel 3
+    for(int a =0; a < 10; a++){
+      int start2 = a * 50;
+      int end2 = start2 + 49;
+      int minVal2 = Current_data_arr2[start2];
+      int maxVal2 = Current_data_arr2[start2];
+      for(int b = start2 + 1; b <= end2; b++){
+        if(Current_data_arr2[b] < minVal2){
+          minVal2 = Current_data_arr2[b];
+        }
+        if(Current_data_arr2[b] > maxVal2){
+          maxVal2 = Current_data_arr2[b];
+        }
+      }
+      Current_data_mmd2[a] = maxVal2 - minVal2;
+      mmd_sum2 += Current_data_mmd2[a];
+      count2++;
+    }
+    float average2 = (float)mmd_sum2 / count2;
+    Serial.println(average2);
+    */
+  }
+  else if(timer_count >= 20){ // after 9.5sec
+
     
-    for(a=0; a<=2000; a++){
-      Total_Current_Data_arr1 += Current_Data_arr1[a];
+    for(int c = 0; c < 1000; c++){
+      //Current_data_arr0[c] = 0;
+      Current_data_arr1[c] = 0;
+      //Current_data_arr2[c] = 0;
     }
-
-    for(b=0; b<2000; b++){
-      Total_Current_Data_arr1 += Current_Data_arr1[b];
+    
+    for(int d = 0; d < 20; d++){
+      //Current_data_mmd0[d] = 0;
+      Current_data_mmd1[d] = 0;
+      //Current_data_mmd2[d] = 0;
     }
+    
+    count0, count1, count2 = 0;
+    mmd_sum0, mmd_sum1, mmd_sum2 = 0;
 
-    if(thisMillis != thisMillis_old) {
-    deltaMillis = thisMillis-thisMillis_old;
-    thisMillis_old = thisMillis;
-    }
-    analogPinTimer -= deltaMillis;
-
-      if(analogPinTimer <= 0){
-        //analogPinTimer += ANALOG_PIN_TIMER_INTERVAL;
-        Serial.println("Calculation Mode");
-            
-      }    
-    } 
+    sampling_timer = true;
+    timer_count = 0;
   }
+}
