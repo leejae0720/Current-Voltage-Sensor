@@ -85,7 +85,7 @@ void loop() {
     timer_count = 0;
   }
 
-  else if(timer_count == 10){
+  else if(timer_count == 19){
     if(!print_flag){
       Serial.print(average0);
       Serial.print(",");
