@@ -70,31 +70,8 @@ void loop() {
     i = 0;
   }
   
-  if(timer_count == 20){ // after 9.5sec
-    
-    Current_data_arr0[500] = {0, };
-    Current_data_arr1[500] = {0, };
-    
-    Current_data_mmd0[10] = {0, };
-    Current_data_mmd1[10] = {0, };
-   
-    count0= 0;
-    count1= 0;
-    mmd_sum0 = 0;
-    mmd_sum1 = 0;
-    timer_count = 0;
-  }
-
-  else if(timer_count == 19){
-    if(!print_flag){
-      Serial.print(average0);
-      Serial.print(",");
-      Serial.println(average1);
-      print_flag = true;
-    }
-  }
-
-  else{ // 0.5sec ~ 9.5sec
+  
+  else if(timer_count >= 1 && timer_count < 19.5){
 
     for(a =0; a < 10; a++){
       start0 = a * 50;
@@ -134,7 +111,76 @@ void loop() {
 
     average0 = mmd_sum0 / count0;
     average1 = mmd_sum1 / count1;
-    print_flag = false;
-    
+    print_flag = false; 
   }
+  
+
+  if(timer_count == 20){ // after 9.5sec
+    
+    Current_data_arr0[500] = {0, };
+    Current_data_arr1[500] = {0, };
+    
+    Current_data_mmd0[10] = {0, };
+    Current_data_mmd1[10] = {0, };
+   
+    count0= 0;
+    count1= 0;
+    average0 = 0;
+    average1 = 0;
+    mmd_sum0 = 0;
+    mmd_sum1 = 0;
+    timer_count = 0;
+  }
+
+  else if(timer_count == 19){
+    if(!print_flag){
+      Serial.print(average0);
+      Serial.print(",");
+      Serial.println(average1);
+      print_flag = true;
+    }
+  }
+
+  else if(timer_count > 1 && timer_count < 19){
+
+    for(a =0; a < 10; a++){
+      start0 = a * 50;
+      end0 = start0 + 49;
+      minVal0 = Current_data_arr0[start0];
+      maxVal0 = Current_data_arr0[start0];
+      for(b = start0 + 1; b <= end1; b++){
+        if(Current_data_arr0[b] < minVal0){
+          minVal0 = Current_data_arr0[b];
+        }
+        if(Current_data_arr0[b] > maxVal0){
+          maxVal0 = Current_data_arr0[b];
+        }
+      }
+      Current_data_mmd0[a] = maxVal0 - minVal0;
+      mmd_sum0 += Current_data_mmd0[a];
+      count0++;
+    }
+    average0 = mmd_sum0 / count0;
+
+    for(c =0; c < 10; c++){
+      start1 = c * 50;
+      end1 = start1 + 49;
+      minVal1 = Current_data_arr1[start1];
+      maxVal1 = Current_data_arr1[start1];
+      for(d = start1 + 1; d <= end1; d++){
+        if(Current_data_arr1[d] < minVal1){
+          minVal1 = Current_data_arr1[d];
+        }
+        if(Current_data_arr1[d] > maxVal1){
+          maxVal1 = Current_data_arr1[d];
+        }
+      }
+      Current_data_mmd1[c] = maxVal1 - minVal1;
+      mmd_sum1 += Current_data_mmd1[c];
+      count1++;
+    }
+
+    average1 = mmd_sum1 / count1;
+    print_flag = false;
+  }  
 }
