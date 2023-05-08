@@ -17,22 +17,7 @@ params2, _ = curve_fit(sin_func, np.arange(len(y2)), y2, p0 = initial_guess)
 
 x = np.linspace(0, len(y1)-1, len(y1)*10)
 
-#x = np.arange(len(y))
-	
-#popt, pcov = curve_fit(sin_func, x, y, p0=initial_guess)
-
-
-#print("amplitude A = ", popt[0])
-#print("frequency f = ", popt[1])
-#print("phase phi = ", popt[2])
-#print("offset d = ", popt[3])
-
-
-#plt.plot(x, y, 'b.', label = 'data')
-#plt.plot(x, sin_func(x, *popt), 'r-', label='Fit')
-#plt.plot(np.arange(len(y1)), y1, label='y1 data')
 plt.plot(x, sin_func(x, *params1), label= 'y1 fit')
-#plt.plot(np.arange(len(y2)), y2, label='y2 data')
 plt.plot(x, sin_func(x, *params2), label= 'y2 fit')
 plt.legend()
 plt.show()
