@@ -10,7 +10,7 @@ y2 = data[:, 1]
 def sin_func(x, A, f, phi, d):
 	return A * np.sin(2* np.pi * f * x + phi) + d
 	
-initial_guess = [1, 60*2*pi, 0, 0]	#declear parmeater
+initial_guess = [0.0000000000001, 60*2*pi, 0, 0]	#declear parmeater
 
 params1, _ = curve_fit(sin_func, np.arange(len(y1)), y1, p0 = initial_guess)
 params2, _ = curve_fit(sin_func, np.arange(len(y2)), y2, p0 = initial_guess)
