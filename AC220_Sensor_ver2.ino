@@ -1,9 +1,11 @@
 #include <HardwareSerial.h>
-#define CHANNEL_Current_1 34
-#define CHANNEL_Current_2 39
-//#define CHANNEL_Current_3 34
+#define CHANNEL_Current_1 13
+#define CHANNEL_Current_2 12
+//#define CHANNEL_Current_3 14
 
-// 36 39 34
+#define CHANNEL_Voltage_1 27
+#define CHANNEL_Voltage_2 26
+#define CHANNEL_Voltage_3 25
 
 bool print_flag = false;
 
