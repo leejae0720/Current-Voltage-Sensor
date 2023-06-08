@@ -1,7 +1,7 @@
 #include <HardwareSerial.h>
 #define CHANNEL_Current_1 13
 #define CHANNEL_Current_2 12
-//#define CHANNEL_Current_3 14
+#define CHANNEL_Current_3 14
 
 #define CHANNEL_Voltage_1 27
 #define CHANNEL_Voltage_2 26
@@ -14,31 +14,34 @@ hw_timer_t *timer0 = NULL;
 hw_timer_t *timer1 = NULL;
 
 unsigned int timer_count = 0;
-int Current_Value_0, Current_Value_1;
+int Current_Value_0, Current_Value_1, Current_Value_2;
 int start0, end0, minVal0, maxVal0;
 int start1, end1, minVal1, maxVal1;
+int start2, end2, minVal2, maxVal2;
 
 unsigned int serial_flag = 0;
 
 // data distinct digit
 int i= 0;
-int a = 0, c = 0;
-int b, d;
+int a = 0, c = 0, e = 0;
+int b, d, f;
 
-int Current_data_arr0[500], Current_data_arr1[500];
-int Current_data_mmd0[10], Current_data_mmd1[10];
-int mmd_sum0 = 0;
-int mmd_sum1 = 0;
-int count0 = 0;
-int count1 = 0;
-int average0 = 0;
-int average1 = 0;
-
+int Current_data_arr0[500], Current_data_arr1[500], Current_data_arr2[500];
+int Voltage_data_arr0[500], Voltage_data_arr1[500], Voltage_data_arr2[500];
+int Current_data_mmd0[10], Current_data_mmd1[10], Current_data_mmd2[10];
+int mmd_sum0 = 0, mmd_sum1 = 0, mmd_sum2 = 0;
+int count0 = 0, count1 = 0, count2 = 0;
+int average0 = 0, average1 = 0, average2 =0;
 
 void IRAM_ATTR onTimer0() { // interrupt function
   if(timer_count == 0){
     Current_data_arr0[i] = analogRead(CHANNEL_Current_1);
     Current_data_arr1[i] = analogRead(CHANNEL_Current_2);
+    Current_data_arr2[i] = analogRead(CHANNEL_Current_3);
+
+    Voltage_data_arr0[i] = analogRead(CHANNEL_Voltage_1);
+    Voltage_data_arr1[i] = analogRead(CHANNEL_Voltage_2);
+    Voltage_data_arr2[i] = analogRead(CHANNEL_Voltage_3);
 
     i++;
   }
@@ -72,9 +75,9 @@ void loop() {
     i = 0;
   }
   
-  
-  else if(timer_count >= 1 && timer_count < 19.5){
+  else if(timer_count >= 1 && timer_count < 6.5){  // 19.5
 
+    // a, b 변수 사용
     for(a =0; a < 10; a++){
       start0 = a * 50;
       end0 = start0 + 49;
@@ -93,6 +96,7 @@ void loop() {
       count0++;
     }
     
+    // c, d 변수 사용
     for(c =0; c < 10; c++){
       start1 = c * 50;
       end1 = start1 + 49;
@@ -111,13 +115,33 @@ void loop() {
       count1++;
     }
 
+    // e, f 변수 사용
+    for(e = 0; e < 10; e++){
+      start2 = e * 50;
+      end2 = start2 + 49;
+      minVal2 = Current_data_arr2[start2];
+      maxVal2 = Current_data_arr2[start2];
+      for(f = start2 + 1; f <= end2; f++){
+        if(Current_data_arr2[f] < minVal2){
+          minVal2 = Current_data_arr2[f];
+        }
+        if(Current_data_arr2[f] > maxVal2){
+          maxVal2 = Current_data_arr2[f];
+        }
+      }
+      Current_data_mmd2[e] = maxVal2 - minVal2;
+      mmd_sum2 += Current_data_mmd2[e];
+      count2++;
+    }
+
     average0 = mmd_sum0 / count0;
     average1 = mmd_sum1 / count1;
+    average2 = mmd_sum2 / count2;
     print_flag = false; 
   }
   
 
-  if(timer_count == 20){ // after 9.5sec
+  if(timer_count == 10){ // after 9.5sec  // 20
     
     Current_data_arr0[500] = {0, };
     Current_data_arr1[500] = {0, };
@@ -134,16 +158,18 @@ void loop() {
     timer_count = 0;
   }
 
-  else if(timer_count == 19){
+  else if(timer_count == 6){ // 19
     if(!print_flag){
       Serial.print(average0);
       Serial.print("\t");
-      Serial.println(average1);
+      Serial.print(average1);
+      Serial.print("\t");
+      Serial.println(average2);
       print_flag = true;
     }
   }
 
-  else if(timer_count > 1 && timer_count < 19){
+  else if(timer_count > 1 && timer_count < 6){ // 19
 
     for(a =0; a < 10; a++){
       start0 = a * 50;
@@ -181,8 +207,28 @@ void loop() {
       mmd_sum1 += Current_data_mmd1[c];
       count1++;
     }
-
     average1 = mmd_sum1 / count1;
+
+    for(e = 0; e < 10; e++){
+      start2 = e * 50;
+      end2 = start2 + 49;
+      minVal2 = Current_data_arr2[start2];
+      maxVal2 = Current_data_arr2[start2];
+      for(f = start2 + 1; f <= end2; f++){
+        if(Current_data_arr2[f] < minVal2){
+          minVal2 = Current_data_arr2[f];
+        }
+        if(Current_data_arr2[f] > maxVal2){
+          maxVal2 = Current_data_arr2[f];
+        }
+      }
+      Current_data_mmd2[e] = maxVal2 - minVal2;
+      mmd_sum2 += Current_data_mmd2[e];
+      count2++;
+    }
+    average2 = mmd_sum2 / count2;
+
+
     print_flag = false;
   }  
 }
