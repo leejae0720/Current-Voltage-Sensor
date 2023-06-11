@@ -23,15 +23,27 @@ unsigned int serial_flag = 0;
 
 // data distinct digit
 int i= 0;
+
+// Current variable
 int a = 0, c = 0, e = 0;
 int b, d, f;
+
+// Voltage variable
+int g = 0, l = 0, n = 0;
+int h, m, o;
 
 int Current_data_arr0[500], Current_data_arr1[500], Current_data_arr2[500];
 int Voltage_data_arr0[500], Voltage_data_arr1[500], Voltage_data_arr2[500];
 int Current_data_mmd0[10], Current_data_mmd1[10], Current_data_mmd2[10];
-int mmd_sum0 = 0, mmd_sum1 = 0, mmd_sum2 = 0;
-int count0 = 0, count1 = 0, count2 = 0;
-int average0 = 0, average1 = 0, average2 =0;
+int Voltage_data_mmd0[10], Voltage_data_mmd1[10], Voltage_data_mmd2[10];
+
+int Current_mmd_sum0 = 0, Current_mmd_sum1 = 0, Current_mmd_sum2 = 0;
+int Current_count0 = 0, Current_count1 = 0, Current_count2 = 0;
+int Current_average0 = 0, Current_average1 = 0, Current_average2 =0;
+
+int Voltage_mmd_sum0 = 0, Voltage_mmd_sum1 = 0, Voltage_mmd_sum2 = 0;
+int Voltage_count0 = 0, Voltage_count1 = 0, Voltage_count2 = 0;
+int Voltage_average0 = 0, Voltage_average1 = 0, Voltage_average2 =0;
 
 void IRAM_ATTR onTimer0() { // interrupt function
   if(timer_count == 0){
@@ -92,8 +104,8 @@ void loop() {
         }
       }
       Current_data_mmd0[a] = maxVal0 - minVal0;
-      mmd_sum0 += Current_data_mmd0[a];
-      count0++;
+      Current_mmd_sum0 += Current_data_mmd0[a];
+      Current_count0++;
     }
     
     // c, d 변수 사용
@@ -111,8 +123,8 @@ void loop() {
         }
       }
       Current_data_mmd1[c] = maxVal1 - minVal1;
-      mmd_sum1 += Current_data_mmd1[c];
-      count1++;
+      Current_mmd_sum1 += Current_data_mmd1[c];
+      Current_count1++;
     }
 
     // e, f 변수 사용
@@ -130,13 +142,13 @@ void loop() {
         }
       }
       Current_data_mmd2[e] = maxVal2 - minVal2;
-      mmd_sum2 += Current_data_mmd2[e];
-      count2++;
+      Current_mmd_sum2 += Current_data_mmd2[e];
+      Current_count2++;
     }
 
-    average0 = mmd_sum0 / count0;
-    average1 = mmd_sum1 / count1;
-    average2 = mmd_sum2 / count2;
+    Current_average0 = Current_mmd_sum0 / Current_count0;
+    Current_average1 = Current_mmd_sum1 / Current_count1;
+    Current_average2 = Current_mmd_sum2 / Current_count2;
     print_flag = false; 
   }
   
@@ -145,26 +157,29 @@ void loop() {
     
     Current_data_arr0[500] = {0, };
     Current_data_arr1[500] = {0, };
+    Current_data_arr2[500] = {0, };
     
     Current_data_mmd0[10] = {0, };
     Current_data_mmd1[10] = {0, };
+    Current_data_mmd2[10] = {0, };
    
-    count0= 0;
-    count1= 0;
-    average0 = 0;
-    average1 = 0;
-    mmd_sum0 = 0;
-    mmd_sum1 = 0;
+    Current_count0= 0;
+    Current_count1= 0;
+    Current_average0 = 0;
+    Current_average1 = 0;
+    Current_mmd_sum0 = 0;
+    Current_mmd_sum1 = 0;
     timer_count = 0;
   }
 
   else if(timer_count == 6){ // 19
     if(!print_flag){
-      Serial.print(average0);
-      Serial.print("\t");
-      Serial.print(average1);
-      Serial.print("\t");
-      Serial.println(average2);
+      Serial.println(Current_average0);
+      //Serial.print("\t");
+      //Serial.print(Voltage_average0);
+      //Serial.print(Current_average1);
+      //Serial.print("\t");
+      //Serial.println(Current_average2);
       print_flag = true;
     }
   }
@@ -185,10 +200,10 @@ void loop() {
         }
       }
       Current_data_mmd0[a] = maxVal0 - minVal0;
-      mmd_sum0 += Current_data_mmd0[a];
-      count0++;
+      Current_mmd_sum0 += Current_data_mmd0[a];
+      Current_count0++;
     }
-    average0 = mmd_sum0 / count0;
+    Current_average0 = Current_mmd_sum0 / Current_count0;
 
     for(c =0; c < 10; c++){
       start1 = c * 50;
@@ -204,10 +219,10 @@ void loop() {
         }
       }
       Current_data_mmd1[c] = maxVal1 - minVal1;
-      mmd_sum1 += Current_data_mmd1[c];
-      count1++;
+      Current_mmd_sum1 += Current_data_mmd1[c];
+      Current_count1++;
     }
-    average1 = mmd_sum1 / count1;
+    Current_average1 = Current_mmd_sum1 / Current_count1;
 
     for(e = 0; e < 10; e++){
       start2 = e * 50;
@@ -223,10 +238,10 @@ void loop() {
         }
       }
       Current_data_mmd2[e] = maxVal2 - minVal2;
-      mmd_sum2 += Current_data_mmd2[e];
-      count2++;
+      Current_mmd_sum2 += Current_data_mmd2[e];
+      Current_count2++;
     }
-    average2 = mmd_sum2 / count2;
+    Current_average2 = Current_mmd_sum2 / Current_count2;
 
 
     print_flag = false;
