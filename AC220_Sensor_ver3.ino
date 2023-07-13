@@ -63,6 +63,7 @@ void IRAM_ATTR onTimer0() { // interrupt function
     Voltage_data_arr2[i] = analogRead(CHANNEL_Voltage_3);
 
     i++;
+
   }
 }
 
@@ -237,12 +238,18 @@ void loop() {
 
   else if(timer_count == 6){ // 19
     if(!print_flag){
-      //Serial.println(Current_average0);
+      Serial.print(Current_average0);
+      Serial.print("\t");
+      Serial.print(Voltage_average0);
+      Serial.print("\t");
+      Serial.print(Current_average1);
+      Serial.print("\t");
+      Serial.print(Voltage_average1);
+      Serial.print("\n");
+      //Serial.print(Current_average2);
       //Serial.print("\t");
-      //Serial.print(Voltage_average0);
-      //Serial.print(Current_average1);
-      //Serial.print("\t");
-      Serial.println(Current_average2);
+      //Serial.println(Voltage_average2);
+  
       print_flag = true;
     }
   }
