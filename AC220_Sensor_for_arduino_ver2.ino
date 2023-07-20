@@ -1,5 +1,6 @@
 #include <SoftwareSerial.h>
 #include <MsTimer2.h>
+#include <math.h>
 
 #define CHANNEL_Current_1 A0
 #define CHANNEL_Current_2 A1
@@ -54,7 +55,20 @@ int Voltage_mmd_sum0 = 0, Voltage_mmd_sum1 = 0, Voltage_mmd_sum2 = 0;
 int Voltage_count0 = 0, Voltage_count1 = 0, Voltage_count2 = 0;
 int Voltage_average0 = 0, Voltage_average1 = 0, Voltage_average2 = 0;
 
-SoftwareSerial SerialMega(10, 11);  // 아두이노 메가의 시리얼 통신을 위한 SoftwareSerial 설정
+// sin curve fitting value
+float t;
+float angle;
+
+// data variable
+float Current0_sum = 0, Current0_A1 = 0, Current0_A2 = 0, Current0_B = 0, Current0_X = 0, Current0_theta = 0;
+float Current1_sum = 0, Current1_A1 = 0, Current1_A2 = 0, Current1_B = 0, Current1_X = 0, Current1_theta = 0;
+float Current2_sum = 0, Current2_A1 = 0, Current2_A2 = 0, Current2_B = 0, Current2_X = 0, Current2_theta = 0;
+
+float Voltage0_sum = 0, Voltage0_A1 = 0, Voltage0_A2 = 0, Voltage0_B = 0, Voltage0_X = 0, Voltage0_theta = 0;
+float Voltage1_sum = 0, Voltage1_A1 = 0, Voltage1_A2 = 0, Voltage1_B = 0, Voltage1_X = 0, Voltage1_theta = 0;
+float Voltage2_sum = 0, Voltage2_A1 = 0, Voltage2_A2 = 0, Voltage2_B = 0, Voltage2_X = 0, Voltage2_theta = 0;
+
+//SoftwareSerial SerialMega(10, 11);  // 아두이노 메가의 시리얼 통신을 위한 SoftwareSerial 설정
 
 void onTimer0() { // interrupt function
   if (timer_count == 0) {
@@ -75,7 +89,7 @@ void onTimer1() {
 }
 
 void setup() {
-  SerialMega.begin(115200); // 아두이노 메가와의 시리얼 통신을 위한 속도 설정
+  Serial.begin(115200); // 아두이노 메가와의 시리얼 통신을 위한 속도 설정
   pinMode(2, OUTPUT);
 
   MsTimer2::set(1, onTimer0); // 0.001 sec Sampling time
@@ -90,147 +104,74 @@ void loop() {
   }
 
   if (timer_count >= 1 && timer_count < 5.5) {  // 19.5
-    // a, b 변수 사용 (channel_1 current)
-    for (a = 0; a < 10; a++) {
-      start0 = a * 50;
-      end0 = start0 + 49;
-      minVal0 = Current_data_arr0[start0];
-      maxVal0 = Current_data_arr0[start0];
-      for (b = start0 + 1; b <= end0; b++) {
-        if (Current_data_arr0[b] < minVal0) {
-          minVal0 = Current_data_arr0[b];
-        }
-        if (Current_data_arr0[b] > maxVal0) {
-          maxVal0 = Current_data_arr0[b];
-        }
-      }
-      Current_data_mmd0[a] = maxVal0 - minVal0;
-      Current_mmd_sum0 += Current_data_mmd0[a];
-      Current_count0++;
+
+    // sin curve fitting function
+    for (a = 0; a < 500; a++){
+      t = 0.001 * (a+1);
+      angle = 2 * PI * 60 * t;
+
+      Current0_sum += Current_data_arr0[a];
+      Current1_sum += Current_data_arr1[a];
+      Current2_sum += Current_data_arr2[a];
+      Voltage0_sum += Voltage_data_arr0[a];
+      Voltage1_sum += Voltage_data_arr1[a];
+      Voltage2_sum += Voltage_data_arr2[a];
+      
     }
 
-    // g, h 변수 사용 (channel_1 voltage)
-    for (g = 0; g < 10; g++) {
-      start3 = g * 50;
-      end3 = start3 + 49;
-      minVal3 = Voltage_data_arr0[start3];
-      maxVal3 = Voltage_data_arr0[start3];
-      for (h = start3 + 1; h <= end3; h++) {
-        if (Voltage_data_arr0[h] < minVal3) {
-          minVal3 = Voltage_data_arr0[b];
-        }
-        if (Voltage_data_arr0[b] > maxVal3) {
-          maxVal3 = Voltage_data_arr0[b];
-        }
-      }
-      Voltage_data_mmd0[g] = maxVal3 - minVal3;
-      Voltage_mmd_sum0 += Voltage_data_mmd0[g];
-      Voltage_count0++;
-    }
+    // Current 1
+    Current0_B = (1/500)*Current0_sum;
+    Current0_A1 = 2*Current0_B*sin(angle);
+    Current0_A2 = 2*Current0_B*cos(angle);
+    Current0_X = sqrt(sq(Current0_A1)+sq(Current0_A2));
+    Current0_theta = atan2(Current0_A2 ,Current0_A1);
 
-    // c, d 변수 사용 (channel_2 current)
-    for (c = 0; c < 10; c++) {
-      start1 = c * 50;
-      end1 = start1 + 49;
-      minVal1 = Current_data_arr1[start1];
-      maxVal1 = Current_data_arr1[start1];
-      for (d = start1 + 1; d <= end1; d++) {
-        if (Current_data_arr1[d] < minVal1) {
-          minVal1 = Current_data_arr1[d];
-        }
-        if (Current_data_arr1[d] > maxVal1) {
-          maxVal1 = Current_data_arr1[d];
-        }
-      }
-      Current_data_mmd1[c] = maxVal1 - minVal1;
-      Current_mmd_sum1 += Current_data_mmd1[c];
-      Current_count1++;
-    }
+    // Current 2
+    Current1_B = (1/500)*Current1_sum;
+    Current1_A1 = 2*Current1_B*sin(angle);
+    Current1_A2 = 2*Current1_B*cos(angle);
+    Current1_X = sqrt(sq(Current1_A1)+sq(Current1_A2));
+    Current1_theta = atan2(Current1_A2 ,Current1_A1);
 
-    // l, m 변수 사용 (channel_2 voltage)
-    for (l = 0; l < 10; l++) {
-      start4 = l * 50;
-      end4 = start4 + 49;
-      minVal4 = Voltage_data_arr1[start4];
-      maxVal4 = Voltage_data_arr1[start4];
-      for (m = start4 + 1; m <= end4; m++) {
-        if (Voltage_data_arr1[m] < minVal4) {
-          minVal4 = Voltage_data_arr1[m];
-        }
-        if (Voltage_data_arr1[m] > maxVal4) {
-          maxVal4 = Voltage_data_arr1[m];
-        }
-      }
-      Voltage_data_mmd1[l] = maxVal4 - minVal4;
-      Voltage_mmd_sum1 += Voltage_data_mmd1[l];
-      Voltage_count1++;
-    }
+    // Current 3
+    Current2_B = (1/500)*Current2_sum;
+    Current2_A1 = 2*Current2_B*sin(angle);
+    Current2_A2 = 2*Current2_B*cos(angle);
+    Current2_X = sqrt(sq(Current2_A1)+sq(Current2_A2));
+    Current2_theta = atan2(Current2_A2 ,Current2_A1);
 
-    // e, f 변수 사용 (channel_3 current)
-    for (e = 0; e < 10; e++) {
-      start2 = e * 50;
-      end2 = start2 + 49;
-      minVal2 = Current_data_arr2[start2];
-      maxVal2 = Current_data_arr2[start2];
-      for (f = start2 + 1; f <= end2; f++) {
-        if (Current_data_arr2[f] < minVal2) {
-          minVal2 = Current_data_arr2[f];
-        }
-        if (Current_data_arr2[f] > maxVal2) {
-          maxVal2 = Current_data_arr2[f];
-        }
-      }
-      Current_data_mmd2[e] = maxVal2 - minVal2;
-      Current_mmd_sum2 += Current_data_mmd2[e];
-      Current_count2++;
-    }
+    // Voltage 1
+    Voltage0_B = (1/500)*Voltage0_sum;
+    Voltage0_A1 = 2*Voltage0_B*sin(angle);
+    Voltage0_A2 = 2*Voltage0_B*cos(angle);
+    Voltage0_X = sqrt(sq(Voltage0_A1)+sq(Voltage0_A2));
+    Voltage0_theta = atan2(Voltage0_A2 ,Voltage0_A1);
 
-    // n, o 변수 사용 (channel_3 voltage)
-    for (n = 0; n < 10; n++) {
-      start5 = n * 50;
-      end5 = start5 + 49;
-      minVal5 = Voltage_data_arr2[start5];
-      maxVal5 = Voltage_data_arr2[start5];
-      for (o = start5 + 1; o <= end5; o++) {
-        if (Voltage_data_arr2[o] < minVal5) {
-          minVal5 = Voltage_data_arr2[o];
-        }
-        if (Voltage_data_arr2[o] > maxVal5) {
-          maxVal5 = Voltage_data_arr2[o];
-        }
-      }
-      Voltage_data_mmd2[n] = maxVal5 - minVal5;
-      Voltage_mmd_sum2 += Voltage_data_mmd2[n];
-      Voltage_count2++;
-    }
+    // Voltage 2
+    Voltage1_B = (1/500)*Voltage1_sum;
+    Voltage1_A1 = 2*Voltage1_B*sin(angle);
+    Voltage1_A2 = 2*Voltage1_B*cos(angle);
+    Voltage1_X = sqrt(sq(Voltage1_A1)+sq(Voltage1_A2));
+    Voltage1_theta = atan2(Voltage1_A2 ,Voltage1_A1);
 
-    Current_average0 = Current_mmd_sum0 / Current_count0;
-    Current_average1 = Current_mmd_sum1 / Current_count1;
-    Current_average2 = Current_mmd_sum2 / Current_count2;
-
-    Voltage_average0 = Voltage_mmd_sum0 / Voltage_count0;
-    Voltage_average1 = Voltage_mmd_sum1 / Voltage_count1;
-    Voltage_average2 = Voltage_mmd_sum2 / Voltage_count2;
+    // Voltage 3
+    Voltage2_B = (1/500)*Voltage2_sum;
+    Voltage2_A1 = 2*Voltage2_B*sin(angle);
+    Voltage2_A2 = 2*Voltage2_B*cos(angle);
+    Voltage2_X = sqrt(sq(Voltage2_A1)+sq(Voltage2_A2));
+    Voltage2_theta = atan2(Voltage2_A2 ,Voltage2_A1);
 
     print_flag = false;
   }
 
   else if (timer_count == 7) { // after 9.5sec  // 20
-    memset(Current_data_arr0, 0, sizeof(Current_data_arr0));
-    memset(Current_data_arr1, 0, sizeof(Current_data_arr1));
-    memset(Current_data_arr2, 0, sizeof(Current_data_arr2));
+    Current_data_arr0[500] = { };
+    Current_data_arr1[500] = { };
+    Current_data_arr2[500] = { };
 
-    memset(Current_data_mmd0, 0, sizeof(Current_data_mmd0));
-    memset(Current_data_mmd1, 0, sizeof(Current_data_mmd1));
-    memset(Current_data_mmd2, 0, sizeof(Current_data_mmd2));
-
-    memset(Voltage_data_arr0, 0, sizeof(Voltage_data_arr0));
-    memset(Voltage_data_arr1, 0, sizeof(Voltage_data_arr1));
-    memset(Voltage_data_arr2, 0, sizeof(Voltage_data_arr2));
-
-    memset(Voltage_data_mmd0, 0, sizeof(Voltage_data_mmd0));
-    memset(Voltage_data_mmd1, 0, sizeof(Voltage_data_mmd1));
-    memset(Voltage_data_mmd2, 0, sizeof(Voltage_data_mmd2));
+    Voltage_data_arr0[500] = { };
+    Voltage_data_arr1[500] = { };
+    Voltage_data_arr2[500] = { };
 
     Current_count0 = 0;
     Current_count1 = 0;
@@ -257,20 +198,13 @@ void loop() {
 
   else if (timer_count == 6) { // 19
     if (!print_flag) {
-      SerialMega.print(Current_average0);
-      SerialMega.print("\t");
-      SerialMega.print(Voltage_average0);
-      SerialMega.print("\t");
-      SerialMega.print(Current_average1);
-      SerialMega.print("\t");
-      SerialMega.println(Voltage_average1);
-      //SerialMega.print("\n");
-      //SerialMega.print(Current_average2);
-      //SerialMega.print("\t");
-      //SerialMega.println(Voltage_average2);
-
-      SerialMega.print(Current_average0);
-
+      Serial.print(Current0_B);
+      Serial.print('\t');
+      Serial.print(Current0_X);
+      Serial.print('\t');
+      Serial.print(Current0_theta);
+      
+      
       print_flag = true;
     }
   }
