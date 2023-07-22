@@ -31,8 +31,8 @@ int Current_data_arr0[500], Current_data_arr1[500], Current_data_arr2[500];
 int Voltage_data_arr0[500], Voltage_data_arr1[500], Voltage_data_arr2[500];
 
 // sin curve fitting value
-int angle0[500], angle1[500], angle2[500], angle3[500], angle4[500], angle5[500];
-int fitting_sampling_time0[500], fitting_sampling_time1[500], fitting_sampling_time2[500], fitting_sampling_time3[500], fitting_sampling_time4[500], fitting_sampling_time5[500];
+int angle[500];
+int fitting_sampling_time[500];
 
 // data variable
 int Current0_sum = 0, Current0_B = 0, Current0_X = 0, Current0_theta = 0;
@@ -89,23 +89,8 @@ void loop() {
 
     // sin curve fitting function
     for (j = 0; j < 500; j++){
-      fitting_sampling_time0[j] = 0.001 * (j+1);
-      angle0[j] = 2 * PI * 60 * fitting_sampling_time0[j];
-
-      fitting_sampling_time1[j] = 0.001 * (j+1);
-      angle1[j] = 2 * PI * 60 * fitting_sampling_time1[j];
-
-      fitting_sampling_time2[j] = 0.001 * (j+1);
-      angle2[j] = 2 * PI * 60 * fitting_sampling_time2[j];
-
-      fitting_sampling_time3[j] = 0.001 * (j+1);
-      angle3[j] = 2 * PI * 60 * fitting_sampling_time3[j];
-
-      fitting_sampling_time4[j] = 0.001 * (j+1);
-      angle4[j] = 2 * PI * 60 * fitting_sampling_time4[j];
-
-      fitting_sampling_time5[j] = 0.001 * (j+1);
-      angle5[j] = 2 * PI * 60 * fitting_sampling_time5[j];
+      fitting_sampling_time[j] = 0.001 * (j+1);
+      angle[j] = 2 * PI * 60 * fitting_sampling_time[j];
 
       Current0_sum += Current_data_arr0[j];
       Current1_sum += Current_data_arr1[j];
@@ -118,8 +103,8 @@ void loop() {
     // Current 1
     Current0_B = (1/500)*Current0_sum;
     for(int a = 0; a < 500; a++){
-      Current0_A1[a] = 2*Current0_B*sin(angle0[a]);
-      Current0_A2[a] = 2*Current0_B*cos(angle0[a]);
+      Current0_A1[a] = 2*Current0_B*sin(angle[a]);
+      Current0_A2[a] = 2*Current0_B*cos(angle[a]);
       Current0_X = sqrt(sq(Current0_A1[a])+sq(Current0_A2[a]));
       Current0_theta = atan2(Current0_A2[a] ,Current0_A1[a]);
     }
@@ -127,8 +112,8 @@ void loop() {
     // Current 2
     Current1_B = (1/500)*Current1_sum;
     for(int b = 0; b < 500; b++){
-      Current1_A1[b] = 2*Current1_B*sin(angle1[b]);
-      Current1_A2[b] = 2*Current1_B*cos(angle1[b]);
+      Current1_A1[b] = 2*Current1_B*sin(angle[b]);
+      Current1_A2[b] = 2*Current1_B*cos(angle[b]);
       Current1_X = sqrt(sq(Current1_A1[b])+sq(Current1_A2[b]));
       Current1_theta = atan2(Current1_A2[b] ,Current1_A1[b]);
     }
@@ -136,8 +121,8 @@ void loop() {
     // Current 3
     Current2_B = (1/500)*Current2_sum;
     for(int c = 0; c < 500; c++){
-      Current2_A1[c] = 2*Current2_B*sin(angle2[c]);
-      Current2_A2[c] = 2*Current2_B*cos(angle2[c]);
+      Current2_A1[c] = 2*Current2_B*sin(angle[c]);
+      Current2_A2[c] = 2*Current2_B*cos(angle[c]);
       Current2_X = sqrt(sq(Current2_A1[c])+sq(Current2_A2[c]));
       Current2_theta = atan2(Current2_A2[c] ,Current2_A1[c]);
     }
@@ -145,8 +130,8 @@ void loop() {
     // Voltage 1
     Voltage0_B = (1/500)*Voltage0_sum;
     for(int d = 0; d < 500; d++){
-      Voltage0_A1[d] = 2*Voltage0_B*sin(angle3[d]);
-      Voltage0_A2[d] = 2*Voltage0_B*sin(angle3[d]);
+      Voltage0_A1[d] = 2*Voltage0_B*sin(angle[d]);
+      Voltage0_A2[d] = 2*Voltage0_B*sin(angle[d]);
       Voltage0_X = sqrt(sq(Voltage0_A1[d])+sq(Voltage0_A2[d]));
       Voltage0_theta = atan2(Voltage0_A2[d], Voltage0_A1[d]);
      }
@@ -154,8 +139,8 @@ void loop() {
     // Voltage 2
     Voltage1_B = (1/500)*Voltage1_sum;
     for(int e = 0; e < 500; e++){
-      Voltage1_A1[e] = 2*Voltage1_B*sin(angle4[e]);
-      Voltage1_A2[e] = 2*Voltage1_B*sin(angle4[e]);
+      Voltage1_A1[e] = 2*Voltage1_B*sin(angle[e]);
+      Voltage1_A2[e] = 2*Voltage1_B*sin(angle[e]);
       Voltage1_X = sqrt(sq(Voltage1_A1[e])+sq(Voltage1_A2[e]));
       Voltage1_theta = atan2(Voltage1_A2[e], Voltage1_A1[e]);
      }
@@ -163,8 +148,8 @@ void loop() {
     // Voltage 3
     Voltage2_B = (1/500)*Voltage2_sum;
     for(int f = 0; f < 500; f++){
-      Voltage2_A1[f] = 2*Voltage2_B*sin(angle5[f]);
-      Voltage2_A2[f] = 2*Voltage2_B*sin(angle5[f]);
+      Voltage2_A1[f] = 2*Voltage2_B*sin(angle[f]);
+      Voltage2_A2[f] = 2*Voltage2_B*sin(angle[f]);
       Voltage2_X = sqrt(sq(Voltage2_A1[f])+sq(Voltage2_A2[f]));
       Voltage2_theta = atan2(Voltage2_A2[f], Voltage2_A1[f]);
      }
@@ -183,8 +168,8 @@ void loop() {
 
     Current0_A1[500], Current0_A2[500], Current1_A1[500], Current1_A2[500], Current2_A1[500], Current2_A2[500] = {};
     Voltage0_A1[500], Voltage0_A2[500], Voltage1_A1[500], Voltage1_A2[500], Voltage2_A1[500], Voltage2_A2[500] = {};
-    angle0[500], angle1[500], angle2[500], angle3[500], angle4[500], angle5[500] = {};
-    fitting_sampling_time0[500], fitting_sampling_time1[500], fitting_sampling_time2[500], fitting_sampling_time3[500], fitting_sampling_time4[500], fitting_sampling_time5[500] = {};
+    angle[500] = {};
+    fitting_sampling_time[500] = {};
     
     Current0_sum = 0, Current0_B = 0, Current0_X = 0, Current0_theta = 0;
     Current1_sum = 0, Current1_B = 0, Current1_X = 0, Current1_theta = 0;
@@ -199,7 +184,7 @@ void loop() {
 
   else if (timer_count == 6) { // 19
     if (!print_flag) {
-      /*
+      
       Serial.print(Current0_B);
       Serial.print('\t');
       Serial.print(Current0_X);
@@ -235,8 +220,7 @@ void loop() {
       Serial.print(Voltage2_X);
       Serial.print('\t');
       Serial.println(Voltage2_theta);
-      */
-
+      //
       Serial.println(Current0_sum);
 
       print_flag = true;
