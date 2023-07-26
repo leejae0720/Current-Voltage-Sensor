@@ -17,7 +17,7 @@ unsigned int serial_flag = 0;
 unsigned int timer_count = 0;
 int count = 0;
 // data distinct digit
-int i = 0, j = 0;
+int i = 0;
 
 unsigned int Current_data_arr0[500], Current_data_arr1[500], Current_data_arr2[500];
 unsigned int Voltage_data_arr0[500], Voltage_data_arr1[500], Voltage_data_arr2[500];
@@ -75,8 +75,8 @@ void setup() {
   MsTimer2::set(1, onTimer0); // 0.001 sec Timer
   MsTimer2::start();
   for(int t = 0; t < 500; t++){
-    fitting_sampling_time[j] = 0.001 * (j+1);
-    angle[j] = 2 * PI * 60 * fitting_sampling_time[j];
+    fitting_sampling_time[t] = 0.001 * (t+1);
+    angle[t] = 2 * PI * 60 * fitting_sampling_time[t];
   }
 }
 
@@ -84,7 +84,7 @@ void loop() {
   if (timer_count == 1000) {  // 19.5
     
     // sin curve fitting function
-    for (j = 0; j < 500; j++){
+    for (int j = 0; j < 500; j++){
       
       noInterrupts();
       Current0_sum += Current_data_arr0[j];
@@ -229,11 +229,6 @@ void loop() {
       Serial.print(Voltage2_X);
       Serial.print('\t');
       Serial.println(Voltage2_theta);
-      Serial.print(Current0_sum);
-      Serial.print('\t');
-      Serial.print(Current1_sum);
-      Serial.print('\t');
-      Serial.println(Current2_sum);
       print_flag = false;
     }
   }
