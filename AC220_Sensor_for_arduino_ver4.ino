@@ -51,6 +51,8 @@ int Voltage2_theta = 0;
 volatile unsigned long Voltage2_sum = 0, Voltage2_B = 0, Voltage2_X = 0;
 unsigned int Voltage2_A1[500], Voltage2_A2[500];
 
+int CHANNEL1_Power = 0, CHANNEL2_Power = 0, CHANNEL3_Power = 0;
+
 void onTimer0() { // interrupt function
   if (timer_count >= 0 && timer_count < 500){  // 0 ~ 0.5 sec
     noInterrupts();
