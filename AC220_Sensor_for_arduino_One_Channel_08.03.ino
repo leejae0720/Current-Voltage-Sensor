@@ -76,21 +76,17 @@ void loop() {
 
     // Sincurve fitting 
     // Current 1
-    for(int a = 0; a < 500; a++){
-      Current0_A1 = (2/500)*Current0_A1_sum;
-      Current0_A2 = (2/500)*Current0_A2_sum;
-      Current0_X = sqrt(sq(Current0_A1)+sq(Current0_A2));
-      Current0_theta = atan2(Current0_A2 ,Current0_A1);
-    }
+    Current0_A1 = (2*Current0_A1_sum)/500;
+    Current0_A2 = (2*Current0_A2_sum)/500;
+    Current0_X = sqrt(sq(Current0_A1)+sq(Current0_A2));
+    Current0_theta = atan2(Current0_A2 ,Current0_A1);
+
     
     // Voltage 1
-    Voltage0_Odc = Voltage0_sum/500;
-    for(int d = 0; d < 500; d++){
-      Voltage0_A1 = (2/500)*Voltage0_A1_sum;
-      Voltage0_A2 = (2/500)*Voltage0_A2_sum;
-      Voltage0_X = sqrt(sq(Voltage0_A1)+sq(Voltage0_A2));
-      Voltage0_theta = atan2(Voltage0_A2, Voltage0_A1);
-     }
+    Voltage0_A1 = (2*Voltage0_A1_sum)/500;
+    Voltage0_A2 = (2*Voltage0_A2_sum)/500;
+    Voltage0_X = sqrt(sq(Voltage0_A1)+sq(Voltage0_A2));
+    Voltage0_theta = atan2(Voltage0_A2, Voltage0_A1);
 
     print_flag = true;
 
@@ -131,13 +127,13 @@ void loop() {
       // Serial.print("\t");
       // Serial.println(Channel1_Power);
 
-      Serial.print(Current0_X);
+      Serial.print(Irms0);
       Serial.print("\t");
-      Serial.print(Current0_theta);
+      Serial.print(Vrms0);
       Serial.print("\t");
-      Serial.print(Voltage0_X);
+      Serial.print(Pf0);
       Serial.print("\t");
-      Serial.println(Voltage0_theta);
+      Serial.println(Channel1_Power);
       // Serial.println(fitting_sampling_time[300]);
 
       print_flag = false;
