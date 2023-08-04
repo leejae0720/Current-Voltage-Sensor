@@ -8,7 +8,10 @@ insert 0A (Using Analog Discovery 2)
 
 ![image](https://github.com/JaeHongLeee/Current-Voltage-Sensor/assets/90753251/9dc59bdb-4027-4a33-a634-ce494239f1c9)
 
-insert 5A (Using Analog Discovery 2)
+### insert 5A (Using Analog Discovery 2)
+
+If the phase difference changes voltage to 180 degrees, a waveform with a phase difference of 0 degrees can be generated.
+![image](https://github.com/JaeHongLeee/Current-Voltage-Sensor/assets/90753251/c1660c63-d7d8-4f58-848c-6cf166b34f0a)
 
 ![image](https://github.com/JaeHongLeee/Current-Voltage-Sensor/assets/90753251/8f905b00-44b8-4be8-aa7b-fa5286834d31)
 
