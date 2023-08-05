@@ -8,8 +8,7 @@ csv_filename = now.strftime("%Y%m%d_%H%M") + '.csv'
 data_list = []
 average_list = []
 
-column_name = ["Irms0", "Vrms0", "PF0", "P0"] 
-#"Irms1", "Vrms1", "PF1", "P1", "Irms2", "Vrms2", "PF2", "P2"]  
+column_name = ["Irms0", "Vrms0", "PF0", "P0", "Irms1", "Vrms1", "PF1", "P1", "Irms2", "Vrms2", "PF2", "P2"]  
 
 ignore_first_data = True
 start_time = datetime.now()
