@@ -27,13 +27,13 @@ unsigned int Voltage_data_arr2[500] = {0};
 int angle[500] = {0};
 float fitting_sampling_time[500] = {0};
 
-float Irms0, Vrms0, Pf0;
+float Pf0, Irms0_out, Vrms0_out;
 float Channel1_Power = 0;
 
-float Irms1, Vrms1, Pf1;
+float Pf1, Irms1_out, Vrms1_out;
 float Channel2_Power = 0;
 
-float Irms2, Vrms2, Pf2;
+float Pf2, Irms2_out, Vrms2_out;
 float Channel3_Power = 0;
 
 // interrupt function
@@ -121,39 +121,47 @@ void cal(){
   float Voltage2_X = sqrt(sq(Voltage2_A1)+sq(Voltage2_A2));
   float Voltage2_theta = atan2(Voltage2_A2, Voltage2_A1);
 
-  Irms0 = Current0_X / sqrt(2);
-  Vrms0 = Voltage0_X / sqrt(2);
+  float Irms0 = Current0_X / sqrt(2);
+  float Vrms0 = Voltage0_X / sqrt(2);
 
-  Irms1 = Current1_X / sqrt(2);
-  Vrms1 = Voltage1_X / sqrt(2);
+  float Irms1 = Current1_X / sqrt(2);
+  float Vrms1 = Voltage1_X / sqrt(2);
 
-  Irms2 = Current2_X / sqrt(2);
-  Vrms2 = Voltage2_X / sqrt(2);
+  float Irms2 = Current2_X / sqrt(2);
+  float Vrms2 = Voltage2_X / sqrt(2);
+
+  Irms0_out = 2 * (Irms0 * 0.049);
+  Vrms0_out = Vrms0 * 0.976;
+
+  Irms1_out = 2 * (Irms1 * 0.049);
+  Vrms1_out = Vrms1 * 0.976;
+
+  Irms2_out = 2 * (Irms2 * 0.049);
+  Vrms2_out = Vrms2 * 0.976;
 
   Pf0 = cos((-Current0_theta) + Voltage0_theta);
   Pf1 = cos((-Current1_theta) + Voltage1_theta);
   Pf2 = cos((-Current2_theta) + Voltage2_theta);
 
   // Channel 1
-  Channel1_Power = abs(Irms0 * Vrms0 * Pf0);
-  Channel2_Power = abs(Irms1 * Vrms1 * Pf1);
-  Channel3_Power = abs(Irms2 * Vrms2 * Pf2);
-
+  Channel1_Power = abs(Irms0_out * Vrms0_out * Pf0);
+  Channel2_Power = abs(Irms1_out * Vrms1_out * Pf1);
+  Channel3_Power = abs(Irms2_out * Vrms2_out * Pf2);
   
   print_flag = true;
 }
 
 void Serial_Send_function(){
-  Serial.print(Irms0); Serial.print("\t");
-  Serial.print(Vrms0); Serial.print("\t");
+  Serial.print(Irms0_out); Serial.print("\t");
+  Serial.print(Vrms0_out); Serial.print("\t");
   Serial.print(Pf0); Serial.print("\t");
   Serial.print(Channel1_Power); Serial.print("\t");
-  Serial.print(Irms1); Serial.print("\t");
-  Serial.print(Vrms1); Serial.print("\t");
+  Serial.print(Irms1_out); Serial.print("\t");
+  Serial.print(Vrms1_out); Serial.print("\t");
   Serial.print(Pf1); Serial.print("\t");
   Serial.print(Channel2_Power); Serial.print("\t");
-  Serial.print(Irms2); Serial.print("\t");
-  Serial.print(Vrms2); Serial.print("\t");
+  Serial.print(Irms2_out); Serial.print("\t");
+  Serial.print(Vrms2_out); Serial.print("\t");
   Serial.print(Pf2); Serial.print("\t");
   Serial.println(Channel3_Power);
 
@@ -187,9 +195,9 @@ void loop() {
       Voltage_data_arr2[k] = 0;
     }
     
-    Irms0 = 0, Vrms0 = 0, Pf0 = 0, Channel1_Power = 0;
-    Irms1 = 0, Vrms1 = 0, Pf1 = 0, Channel2_Power = 0;
-    Irms2 = 0, Vrms2 = 0, Pf2 = 0, Channel3_Power = 0;
+    Irms0_out = 0, Vrms0_out = 0, Pf0 = 0, Channel1_Power = 0;
+    Irms1_out = 0, Vrms1_out = 0, Pf1 = 0, Channel2_Power = 0;
+    Irms2_out = 0, Vrms2_out = 0, Pf2 = 0, Channel3_Power = 0;
 
     timer_count = 0;
     i = 0;

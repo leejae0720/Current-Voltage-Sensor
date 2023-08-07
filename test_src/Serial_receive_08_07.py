@@ -2,7 +2,7 @@ import serial
 import csv
 from datetime import datetime, timedelta
 
-ser = serial.Serial('/dev/ttyACM0', 115200)
+ser = serial.Serial('/dev/ttyUSB0', 115200)
 now = datetime.now()
 csv_filename = now.strftime("%Y%m%d_%H%M") + '.csv'
 data_list = []
@@ -31,10 +31,6 @@ while True:
 		data_list.append(data)
 		print(data)
 		
-		#with open(csv_filename, mode='a', newline='') as file:
-		#	writer = csv.writer(file)
-		#	writer.writerows(data_list)
-
 	if now - start_time >= timedelta(minutes=1):
 		if len(data_list) > 0:
 			num_columns = len(data_list[0])
@@ -46,16 +42,12 @@ while True:
 				avg_data.append(average_value)
 
 			average_list.append(avg_data)
-			print(average_list);
+			print(average_list)
 			
 			with open(csv_filename, mode='a', newline='') as file:
 				writer = csv.writer(file)
 				writer.writerow(average_list)
-				
-			avg_line = '\t'.join([f"{average_value}" if i > 0 else '' for i, average_value in enumerate(avg_data)])
-			print(avg_line)
-
-			print('\t'.join(map(str, avg_data)))
 
 		start_time = now
 		data_list.clear()
+		average_list.clear()
