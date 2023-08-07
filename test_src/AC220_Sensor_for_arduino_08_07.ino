@@ -9,6 +9,8 @@
 #define CHANNEL_Voltage_1 A4
 #define CHANNEL_Voltage_2 A5
 
+#define Current_sensor_Value 10
+
 bool print_flag = false;
 unsigned int serial_flag = 0;
 
@@ -130,14 +132,14 @@ void cal(){
   float Irms2 = Current2_X / sqrt(2);
   float Vrms2 = Voltage2_X / sqrt(2);
 
-  Irms0_out = 2 * (Irms0 * 0.049);
-  Vrms0_out = Vrms0 * 0.976;
+  Irms0_out = (Irms0 * 5 * Current_sensor_Value) / 1024;
+  Vrms0_out = (Vrms0 * 5 * 200) / 1024;
 
-  Irms1_out = 2 * (Irms1 * 0.049);
-  Vrms1_out = Vrms1 * 0.976;
+  Irms1_out = (Irms1 * 5 * Current_sensor_Value) / 1024;
+  Vrms1_out = (Vrms1 * 5 * 200) / 1024;
 
-  Irms2_out = 2 * (Irms2 * 0.049);
-  Vrms2_out = Vrms2 * 0.976;
+  Irms2_out = (Irms2 * 5 * Current_sensor_Value) / 1024;
+  Vrms2_out = (Vrms2 * 5 * 200) / 1024;
 
   Pf0 = cos((-Current0_theta) + Voltage0_theta);
   Pf1 = cos((-Current1_theta) + Voltage1_theta);
@@ -208,5 +210,4 @@ void loop() {
       Serial_Send_function();
     }
   }
-
 }
