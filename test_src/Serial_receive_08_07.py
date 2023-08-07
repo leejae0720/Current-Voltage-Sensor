@@ -34,7 +34,7 @@ while True:
 	if now - start_time >= timedelta(minutes=1):
 		if len(data_list) > 0:
 			num_columns = len(data_list[0])
-			avg_data = ['Average']
+			avg_data = [now.strftime("%H:%M")]
 
 			for i in range(1, num_columns):
 				sum_value = sum([float(item[i]) for item in data_list])
