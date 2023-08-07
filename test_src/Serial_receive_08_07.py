@@ -31,7 +31,7 @@ while True:
 		data_list.append(data)
 		print(data)
 		
-	if now - start_time >= timedelta(minutes=1):
+	if now - start_time >= timedelta(minutes=5):
 		if len(data_list) > 0:
 			num_columns = len(data_list[0])
 			avg_data = [now.strftime("%H:%M")]
