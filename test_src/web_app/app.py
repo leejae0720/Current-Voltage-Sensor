@@ -6,7 +6,7 @@ app = Flask(__name__)
 auth = HTTPBasicAuth()
 
 users = {
-	"mirae": "mirae"
+	"mirae": "mirae" # revise your ID and password
 }
 
 @auth.verify_password
@@ -21,7 +21,7 @@ def hello():
 @app.route('/view_csv')
 @auth.login_required
 def view_csv():
-    csv_filename = '20230809_1500.csv'
+    csv_filename = '20230809_1500.csv'	# insert file name
     csv_path = os.path.join(app.root_path, csv_filename)
 
     if os.path.exists(csv_path):
