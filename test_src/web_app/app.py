@@ -18,27 +18,29 @@ def verify_password(username, password):
 def hello():
     return "MIRAE ENGINEERING CO..LTD, Power sensor data server"
 
-@app.route('/view_csv')
+@app.route('/view_csv', methods = ['GET', 'POST'])
 @auth.login_required
 def view_csv():
-    csv_filename = 'Mirae Power Data.csv'  # insert file name
-    csv_directory = "/home/irms/web_app/Power_data"
-    csv_path = os.path.join(csv_directory, csv_filename)
+    if request.method == 'POST':
+        csv_filename = request.form.get('filename') #insert file name
+        csv_directory = "/home/irms/web_app/Power_data"
+        csv_path = os.path.join(csv_directory, filename)
 
     if os.path.exists(csv_path):
         with open(csv_path, 'r') as file:
             csv_content = file.read()
-        return render_template('view_csv.html', content=csv_content)
+        return render_template('view_csv.html', content=csv_content, filename = filename)
     else:
         return "CSV file not found."
-
-@app.route('/download_csv')
+    
+    return render_template('input_filename.html')
+    
+@app.route('/download_csv/<filename>')
 @auth.login_required
-def download_csv():
-    csv_filename = 'Mirae Power Data.csv'
+def download_csv(filename):
     csv_directory = "/home/irms/web_app/Power_data"
-    csv_path = os.path.join(csv_directory, csv_filename)
-    return send_from_directory(directory=csv_directory, filename=csv_filename, as_attachment=True)
+    csv_path = os.path.join(csv_directory, filename)
+    return send_from_directory(directory=csv_directory, filename=filename, as_attachment=True)
 
 # Set Cache-Control header to prevent caching
 @app.after_request
