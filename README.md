@@ -16,11 +16,11 @@ If the phase difference changes voltage to 180 degrees, a waveform with a phase 
 ![image](https://github.com/JaeHongLeee/Current-Voltage-Sensor/assets/90753251/8f905b00-44b8-4be8-aa7b-fa5286834d31)
 
 
-# Hardware Setting image
+## Hardware Setting image
 Controller: Arduino Mega 2560
 
 ![image](https://github.com/JaeHongLeee/Current-Voltage-Sensor/assets/90753251/109cd763-72ff-4f1a-b12a-ac7b905e6388)
 
-# Contributor
+## Contributor
  - Name: Jaehong Lee (이재홍)
  - Email: leejae0720@gmail.com
